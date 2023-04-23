@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moderator Panel</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h1>Moderator Panel</h1>
+  <label for="password">Password:</label>
+  <input type="password" id="password">
+  <button onclick="login()">Login</button>
+  <div id="moderatorPanel" style="display:none;">
+    <h2>All Pastes</h2>
+    <table id="pasteTable">
+      <thead>
+        <tr>
+          <th>Paste ID</th>
+          <th>Delete</th>
+          <th>Deletion Reason</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <p id="deleteResult"></p>
+  </div>
+
+  <script>
+    async function login() {
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await axios.post('/moderator/login', { password });
+        if (response.data.success) {
+          document.getElementById('moderatorPanel').style.display = 'block';
+          loadPastes();
+        } else {
+          alert('Incorrect password');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Login failed');
+      }
+    }
+
+    async function loadPastes() {
+      const password = document.getElementById('password').value;
+    
+      try {
+        const response = await axios.get(`/pastes?password=${password}`);
+        const pastes = response.data;
+        const tbody = document.getElementById('pasteTable').querySelector('tbody');
+        tbody.innerHTML = '';
+    
+        for (const pasteId in pastes) {
+          if (pastes[pasteId].deleted) continue;
+    
+          const tr = document.createElement('tr');
+    
+          const idTd = document.createElement('td');
+          idTd.innerText = pasteId;
+          tr.appendChild(idTd);
+    
+          const deleteBtn = document.createElement('button');
+          deleteBtn.innerText = 'Delete';
+          deleteBtn.onclick = () => deletePaste(pasteId);
+
+          const deleteTd = document.createElement('td');
+          deleteTd.appendChild(deleteBtn);
+          tr.appendChild(deleteTd);
+
+          const reasonInput = document.createElement('input');
+          reasonInput.type = 'text';
+          reasonInput.setAttribute('data-paste-id', pasteId);
+
+          const reasonTd = document.createElement('td');
+          reasonTd.appendChild(reasonInput);
+          tr.appendChild(reasonTd);
+
+          tbody.appendChild(tr);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function deletePaste(pasteId) {
+      const password = document.getElementById('password').value;
+      const reasonInput = document.querySelector(`input[data-paste-id="${pasteId}"]`);
+      const reason = reasonInput.value;
+
+      try {
+        const response = await axios.delete(`/paste/${pasteId}`, { data: { password, reason }
+        });
+        if (response.data.success) {
+          document.getElementById('deleteResult').innerText = `Paste ${pasteId} deleted successfully`;
+          loadPastes();
+        } else {
+          document.getElementById('deleteResult').innerText = `Failed to delete paste ${pasteId}`;
+        }
+      } catch (error) {
+        console.error(error);
+        document.getElementById('deleteResult').innerText = `Failed to delete paste ${pasteId}`;
+      }
+    }
+  </script>
+</body>
+</html>

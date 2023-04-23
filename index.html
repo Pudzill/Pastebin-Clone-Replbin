@@ -1,0 +1,261 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Replbin</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #212121;
+    background-image: radial-gradient(circle, rgba(33, 33, 33, 0.1) 1%, transparent 1%),
+                      radial-gradient(circle, rgba(33, 33, 33, 0.1) 1%, transparent 1%);
+    background-size: 50px 50px;
+    background-position: 0 0, 25px 25px;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  textarea {
+    width: 100%;
+    max-width: 500px;
+    font-family: monospace;
+    background-color: #333;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 1rem;
+    border-radius: 4px;
+    resize: none;
+    transition: all 0.3s;
+  }
+
+  textarea:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+
+  label {
+    display: block;
+    margin-top: 1rem;
+  }
+
+  input {
+    width: 100%;
+    max-width: 500px;
+    background-color: #333;
+    color: #eee;
+    border: 1px solid #555;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: all 0.3s;
+  }
+
+  input:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+
+  button {
+    background-color: #4caf50;
+    color: #eee;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+
+  button:hover {
+    background-color: #3f9a40;
+    transform: scale(1.05);
+  }
+
+  #result {
+    margin-top: 1rem;
+  }
+
+  a {
+    color: #4caf50;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .creator {
+    text-align: center;
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+  }
+
+  .bg-circle {
+    position: fixed;
+    z-index: -1;
+    width: 50px;
+    height: 50px;
+    background-color: transparent;
+    border-radius: 50%;
+    animation: sonar 6s linear infinite;
+  }
+  
+  .bg-circle::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: sonar 6s linear infinite;
+  }
+
+  @keyframes sonar {
+    0% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+    100% {
+      transform: scale(var(--scale, 2));
+      opacity: 0;
+    }
+  }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 1s ease;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .logo {
+    max-width: 150px;
+    margin-bottom: 1rem;
+  }
+
+  .fade-in {
+    animation: fadeIn 1s ease;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Create a new paste</h1>
+    <textarea id="content" rows="10" cols="50"></textarea>
+    <br>
+    <label for="encryptionKey">Encryption key (optional):</label>
+    <input type="text" id="encryptionKey">
+    <br>
+    <label for="expiry">Expiry time in minutes (optional):</label>
+    <input type="number" id="expiry" min="1">
+    <br>
+    <button onclick="createPaste()">Create</button>
+    <p id="result"></p>
+    <p class="creator">Created by Pudzilla</p>
+  </div>
+
+  <script>
+    let latest
+    async function createPaste() {
+      const content = document.getElementById('content').value;
+      const encryptionKey = document.getElementById('encryptionKey').value || null;
+      const expiry = document.getElementById('expiry').value
+        ? new Date().getTime() + (document.getElementById('expiry').value * 60000)
+        : null;
+
+      if (!content.trim()) {
+        const resultElement = document.getElementById('result');
+        resultElement.innerText = 'Text is required for paste creation.';
+        resultElement.classList.add('fade-in');
+        setTimeout(() => {
+          resultElement.classList.remove('fade-in');
+        }, 1000);
+        return;
+      }
+
+      try {
+        const response = await axios.post('/create', { content, encryptionKey, expiry });
+        latest = response.data.id
+        const resultElement = document.getElementById('result');
+        resultElement.innerHTML = `Paste created! <a href="/view/${response.data.id}">View paste</a>`;
+
+      // fade in and out
+      resultElement.classList.add('fade-in');
+      setTimeout(() => {
+        resultElement.classList.remove('fade-in');
+      }, 1000);
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 429) {
+          document.getElementById('result').innerHTML = error.response.data + ` Your latest paste is <a href="/view/${latest}">over here</a>`;
+        } else {
+          document.getElementById('result').innerText = 'An error occurred. Please try again.';
+        }
+      }
+    }
+
+function createSonarCircle() {
+  const existingCircle = document.querySelector('.bg-circle');
+  if (existingCircle) {
+    existingCircle.remove();
+  }
+
+  const circle = document.createElement('div');
+  circle.className = 'bg-circle';
+  circle.style.top = `${Math.random() * 100}vh`;
+  circle.style.left = `${Math.random() * 100}vw`;
+  const randomScale = 2 + Math.random() * 3; // Random scale between 2 and 5
+  circle.style.setProperty('--scale', randomScale);
+  circle.style.animationDuration = `6s`;
+  document.body.appendChild(circle);
+
+  setTimeout(() => {
+    circle.remove();
+  }, 6000);
+}
+
+
+    function createCirclesWithDelay(count, delay) {
+      if (count > 0) {
+        createSonarCircle();
+        setTimeout(() => createCirclesWithDelay(count, delay), delay);
+      }
+    }
+
+    createCirclesWithDelay(10, 9000);
+  </script>
+</body>
+</html>
