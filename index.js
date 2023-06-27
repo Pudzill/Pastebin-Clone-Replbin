@@ -1,4 +1,4 @@
-// Variables 
+// Variables
 const serverSecretKey = process.env['secret']; // pastes encryption key here. if your not the pudzilla, replace me!!
 const moderatorPassword = process.env['moderator']; // moderation account password here. if your not the pudzilla, replace me!!
 const origin = 'https://replbin-pastebin-clone.pudzilla.repl.co'; // replace with the url of your site. if your not on this site, replace me!!
@@ -85,17 +85,15 @@ async function isContentInappropriate(text) {
     });
 
     if (badWordsResponse.data === true) {
-      console.log("API")
+      console.log("API found inappropriate words.")
       return true;
     }
 
     // check for bad words using bad-words library
     if (filter.isProfane(text)) {
-      console.log("Library")
+      console.log("Library found inappropriate words.")
       return true;
     }
-
-    // more checks go here
 
     return false;
   } catch (error) {
