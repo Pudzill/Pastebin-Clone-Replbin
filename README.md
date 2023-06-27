@@ -1,5 +1,5 @@
-<h1 align="center">Pastebin-Clone-Replbin</h1>
-<h3 align="center">Generic Pastebin website clone, but MY generic Pastebin website clone!</h3>
+<h1 align="center">Replbin</h1>
+<h3 align="center">Generic Pastebin clone.</h3>
 <p align="center">Main server file is <code>index.js</code>.</p>
 
 <p align="center"><strong>Supports:</strong></p>
