@@ -1,7 +1,7 @@
 // Variables
-const serverSecretKey = process.env['secret']; // pastes encryption key here. if your not the pudzilla, replace me!!
-const moderatorPassword = process.env['moderator']; // moderation account password here. if your not the pudzilla, replace me!!
-const origin = 'https://replbin-pastebin-clone.pudzilla.repl.co'; // replace with the url of your site. if your not on this site, replace me!!
+const serverSecretKey = process.env['secret']; // put default encryption key here. you should change this!!
+const moderatorPassword = process.env['moderator']; // moderation account password here. you should change this!!
+const origin = 'https://replbin-pastebin-clone.pudzilla.repl.co'; // replace with the url of your site. you should change this to whatever the url of the site its being hosted on is!!
 
 // Require the cool stuff
 const express = require('express');
